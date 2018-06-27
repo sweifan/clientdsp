@@ -42,12 +42,12 @@ class Conf extends Controller {
 	/**
      * 地区列表
 	 */
-	public function appclass()
+	public function industryclass()
 	{
         $this->checkUserLogin();
         
-        $this->load->config('appclass');
-        $arrRes['list'] = $this->config->item('appclass');
+        $this->load->config('industryclass');
+        $arrRes['list'] = $this->config->item('industryclass');
         
         return $this->outJson($arrRes, ErrCode::OK,'ok');
 	}

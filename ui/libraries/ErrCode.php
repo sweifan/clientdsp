@@ -25,10 +25,7 @@ class ErrCode {
      *
      * @return array
      */
-    public static function format($arrResponse, $intErrCode, $strErrMsg=null) {//{{{//
-        if (is_null($strErrMsg)) {
-            $strErrMsg = self::getDefaultErrMsg($intErrCode);
-        }
+    public static function format($arrResponse, $intErrCode, $strErrMsg='ok') {//{{{//
         return [
             'code' => $intErrCode,
             'msg'  => $strErrMsg,

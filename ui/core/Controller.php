@@ -29,8 +29,4 @@ class Controller extends CI_Controller {
         echo json_encode($arrData); 
     } 
 
-    protected function checkLogin() {
-
-        throw new Exception('user not login', ERR_NOT_LOGIN);
-    }
 }

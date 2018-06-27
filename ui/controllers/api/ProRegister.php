@@ -25,12 +25,12 @@ class ProRegister extends Controller {
 		"app_developer",
 		"pro_url",
 		"apk_id",
-		"app_class",
 		"bussiness_range",
 		"app_des",
     ];
 
     const VALID_BASE_KEY = [
+        "industry_class",
 		"charge_type",
 		"pro_reg_stratge",
 		"pro_region",

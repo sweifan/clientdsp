@@ -214,11 +214,14 @@ class DbUtil {
      */
     public function query($strSql) {
         $res = $this->CI->db->query($strSql);
+        $arrError = $this->CI->db->error();
+        if ($arrError['code'] != 0) {
+            throw new Exception($arrError['message'], ErrCode::ERR_SYSTEM);
+        }
         if (is_bool($res)) {
             return $res;
         }
-        $res = $objRes->result_array();
-        return $arrRes;
+        return $res->result_array();
     }
 
     /**
