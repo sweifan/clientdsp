@@ -46,8 +46,8 @@ class Conf extends Controller {
 	{
         $this->checkUserLogin();
         
-        $this->load->config('app_class');
-        $arrRes['list'] = $this->config->item('app_class');
+        $this->load->config('appclass');
+        $arrRes['list'] = $this->config->item('appclass');
         
         return $this->outJson($arrRes, ErrCode::OK,'ok');
 	}
