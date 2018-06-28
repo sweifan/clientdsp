@@ -14,14 +14,61 @@ class Ad extends CI_Model {
         $arrIndustry = $this->getTopIndustry();
         //$arrIndustry = [5,7,9,11,4,6,12,22,27];
         $arrIndustry = [
-            4 => 1.9,
-            5 => 0.5,
-            6 => 0.5,
+            4 => 0.1,
+            5 => 0.1,
+            6 => 0.1,
         ];
 
         $arrProList = $this->getTopPricePro($arrIndustry);
-        echo json_encode($arrProList);exit;
-        $arrProList = $this->orderProList($arrProList);
+        $arrProWeight = $this->orderProList($arrProList);
+
+        list($arrProInfo, $floatSecondWeightPrice) = $this->getPro($arrProList, $arrProWeight);
+
+        $floatSecondPrice = $this->computeSecondPrice($arrProInfo['second_price'], $floatSecondWeightPrice);
+        echo json_encode($arrProInfo);exit;
+    
+    }
+
+    /**
+     * step5 : 获取最终二价，即 要扣费的单价
+     */
+    private function computeSecondPrice($floatCurPrice, $floatSecondWeightPrice, $minbid = 0) {
+        $price = $floatSecondWeightPrice + 0.03;
+        $price = $price > $floatCurPrice ? $floatCurPrice+0.01 : $price;
+        $price = $price < $minbid ? $minbid : $price;
+        return $price 
+    }
+
+
+    /**
+     * step4 : 获取最后的广告,和权重排名第二的二价
+     * @param array $arrProList
+     * @param array $arrProWeight
+     * @return array
+     */
+    private function getPro($arrProList, $arrProWeight) {
+        $floatSecondWeightPrice = 0;
+        $arrProInfo = [];
+        $intCountWeight = 0;
+        foreach($arrProWeight as $val) {
+            $intCountWeight += $val;
+        }
+        $intRand = mt_rand(1, $intCountWeight);
+        $intInterval = 0;
+        $mark = 0;
+        foreach($arrProWeight as $pro_id => $rate) {
+            if ($mark === 1) {
+                $floatWeightSecondPrice = $arrProList[$pro_id]['second_price']; 
+                break;
+            }
+            if ($intRand >= $intInterval
+                && $intRand <= $intInterval + $rate) {
+                $arrProInfo = $arrProList[$pro_id];
+                $mark = 1;
+            }
+            $intInterval += $rate;
+        }
+        return [$arrProInfo, $floatWeightSecondPrice];
     }
 
     /**
@@ -29,24 +76,76 @@ class Ad extends CI_Model {
      * 昨日点击率*100*权重+昨日ecpm*权重；
      */
     private function orderProList($arrProList) {
-        // 查询 dsp_prodata 获取点击率和ecpm 
+        // 查询 dsp_prodata 获取点击率和ecpm
         $this->load->library('DbUtil');
-        $strWhere = 'pro_id in(';
-        foreach ($arrProList as $val) {
-            $strWhere .= $val['pro_id'] . ','; 
-        }
-        $strWhere = substr($strWhere, 0, -1) . ')';
+        $arrWhere = array_keys($arrProList);
         $arrParams = [
-            'select' => 'exposure_num,click_num,cpm,acp',
-            'where' => $strWhere,
+            'select' => 'pro_id,exposure_num,click_num,cpm,spend,acp',
+            'where' => 'pro_id in(' . implode(',', $arrWhere) . ') and date=' . date("Ymd",strtotime("-1 day")),
         ];
-        $this->dbutil->getProData($arrParams);
-        // 计算 点击率 ecpm 公式是撒？
+        $arrProData = $this->dbutil->getProData($arrParams);
+        if (empty($arrProData)) {
+            throw new Exception('error has not pro data', ErrCode::ERR_SYSTEM);
+        }
+        // 分离没有展现的pro_id
+        $arrProWeight = [];
+        $arrProWithoutExposure = $arrWhere;
+        foreach ($arrProData as $key => $val) {
+            if (in_array($val['pro_id'], $arrWhere)
+                && !empty($val['exposure_num'])) {
+                $arrProWeight[$val['pro_id']] = $this->computeWeight($val['exposure_num'], $val['click_num'], $val['spend']); 
+                $arrProWithoutExposure = array_diff($arrProWithoutExposure, [$val['pro_id']]);
+            } 
+        }
+        // 有展现pro展示比例
+        $floatRateWithoutE = round(count($arrProWithoutExposure)/count($arrWhere), 3);
+        $floatRateWithE = 1 - $floatRateWithoutE;
+        arsort($arrProWeight, SORT_NUMERIC);
+        $i = 0;
+        $intCountWeight = 0;
+        foreach ($arrProWeight as $pro_id => &$weight) {
+            if ($i >= $this->arrStratge['pro_top_n']) {
+                unset($arrProWeight[$pro_id]);
+            }
+            $weight = intval($weight);
+            $intCountWeight += $weight;
+            $i++;
+        }
 
-    }   
+        // 无展现pro展示比例，根据pro_info的second_price确定
+        if (!empty($arrProWithoutExposure)) {
+            $intCountWeight = intval($intCountWeight/$floatRateWithE);
+            $floatAllSecondPrice = 0;
+            foreach ($arrProWithoutExposure as $pro_id) {
+                $floatAllSecondPrice += $arrProList[$pro_id]['second_price'];
+            }
+            foreach ($arrProWithoutExposure as $pro_id) {
+                $arrProWeight[$pro_id] = intval($intCountWeight * $floatRateWithoutE * $arrProList[$pro_id]['second_price'] / $floatAllSecondPrice); 
+            }
+        }
+        return $arrProWeight;
+    }
+
+
+
+    /**
+     * 昨日点击率* 100*权重+昨日ecpm*权重
+     * @param int $intExposureNum 昨日曝光量
+     * @param int $intClickNum 昨日点击量
+     * @return float
+     */
+    private function computeWeight($intExposureNum, $intClickNum, $floatSpend) {
+        $floatClickRate = round($intClickNum/$intExposureNum, 2)*100;
+        $floatCpm = round($floatSpend/$intExposureNum, 2)*1000;
+        return 
+            $floatClickRate * $this->arrStratge['clickrate_weight'] 
+            +
+            $floatCpm * $this->arrStratge['ecpm_weight'];
+    }
 
     /**
      * step2 : 获取各行业单价top N Pro信息
+     * @return array ['pro_id'=>INFO, ... ...]
      */
     private function getTopPricePro($arrIndustry) {//{{{//
         /*
@@ -94,7 +193,7 @@ class Ad extends CI_Model {
                 }
                 $arrTmpVal = array_combine($arrFields, $arrTmpVal);
                 if ($this->checkAdCondition($arrTmpVal)) {
-                    $arrProList[] = $arrTmpVal;
+                    $arrProList[$arrTmpVal['pro_id']] = $arrTmpVal;
                 }
             }
         }
@@ -107,6 +206,7 @@ class Ad extends CI_Model {
      * @return bool
      */
     public function checkAdCondition($arrProInfo) {
+        // daily_buget 要做花费和日预算的checker , 直接从redis读了dsp_prodata 的 daily_buget
         // pro_region
         // pro_phone_brond
         // pro_phone_grade

@@ -4,4 +4,5 @@ $config['stratge'] = [
     'top_price_limit'       => 5,
     'clickrate_weight'      => 5,
     'ecpm_weight'           => 5,
+    'pro_top_n'             => 5,
 ];
