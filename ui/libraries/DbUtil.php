@@ -110,7 +110,7 @@ class DbUtil {
         $objRes = $this->CI->db->get($strTabName);
         //echo $this->CI->db->last_query();exit;
         if ($objRes === false) {
-            throw new Exception('system error', ErrCode::ERR_SYSTEM);
+            throw new Exception($this->CI->db->error()['message'], ErrCode::ERR_SYSTEM);
         }
         if (empty($objRes)) {
             return [];
