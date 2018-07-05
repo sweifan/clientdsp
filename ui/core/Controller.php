@@ -12,6 +12,8 @@ class Controller extends CI_Controller {
     public function checkUserLogin() {
         $this->load->model('User');
         $this->arrUser = $this->User->checkLogin();
+        // TODO
+        $this->arrUser = json_decode('{"account_id":"1","email":"xxxx@baidu.com","username":"aaa"}', true);
         if (empty($this->arrUser)) {
             throw new Exception("please login first", ErrCode::ERR_NOT_LOGIN);
         }

@@ -11,6 +11,9 @@ class Ad extends CI_Model {
     }
 
     public function getAd() {
+
+        // TODO 检查账户余额
+
         $arrIndustry = $this->getTopIndustry();
         //$arrIndustry = [5,7,9,11,4,6,12,22,27];
         $arrIndustry = [

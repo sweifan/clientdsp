@@ -2,7 +2,7 @@
 /**
  * pro list
  */
-class ProList extends Controller {
+class ProInfoList extends Controller {
 
     public function __construct() {
         parent::__construct();
@@ -11,11 +11,4 @@ class ProList extends Controller {
     /**
      * pro 列表
      */
-    public function index() {//{{{//
-		$this->checkUserLogin();
-
-        $this->load->model('ProInfo');
-        $arrRes['list'] = $this->ProInfo->getList($this->arrUser['account_id']);
-        $this->outJson($arrRes, ErrCode::OK, 'ok');
-    }//}}}//
 }
