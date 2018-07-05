@@ -19,8 +19,8 @@ class AdGet extends Controller {
         //}
 
         $this->load->model('Ad');
-        $this->Ad->getAd();
-        $this->outJson([], ErrCode::OK);
+        $arrData = $this->Ad->getAd();
+        $this->outJson($arrData, ErrCode::OK, 'ok');
     }
 
 }

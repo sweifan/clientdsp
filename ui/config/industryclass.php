@@ -22,7 +22,7 @@ $config['industryclass'] = array (
         'parentId' => 1,
         'name' => '社交应用',
         'weight' => 5,
-		'bottom_price' => 2.9,
+		'bottom_price' => 0.02,
     ),
     5 => 
     array (
@@ -30,7 +30,7 @@ $config['industryclass'] = array (
         'parentId' => 1,
         'name' => '地图导航',
         'weight' => 2,
-		'bottom_price' => 0.5,
+		'bottom_price' => 0.01,
     ),
     6 => 
     array (

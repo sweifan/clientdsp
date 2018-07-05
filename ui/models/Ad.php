@@ -11,16 +11,11 @@ class Ad extends CI_Model {
     }
 
     public function getAd() {
+        $arrProInfo = [];
 
         // TODO 检查账户余额
 
         $arrIndustry = $this->getTopIndustry();
-        //$arrIndustry = [5,7,9,11,4,6,12,22,27];
-        $arrIndustry = [
-            4 => 0.1,
-            5 => 0.1,
-            6 => 0.1,
-        ];
 
         $arrProList = $this->getTopPricePro($arrIndustry);
         $arrProWeight = $this->orderProList($arrProList);
@@ -28,7 +23,9 @@ class Ad extends CI_Model {
         list($arrProInfo, $floatSecondWeightPrice) = $this->getPro($arrProList, $arrProWeight);
 
         $floatSecondPrice = $this->computeSecondPrice($arrProInfo['second_price'], $floatSecondWeightPrice);
-        echo json_encode($arrProInfo);exit;
+
+        $arrProInfo['second_price'] = $floatSecondWeightPrice;
+        return $arrProInfo;
     
     }
 
@@ -39,7 +36,7 @@ class Ad extends CI_Model {
         $price = $floatSecondWeightPrice + 0.03;
         $price = $price > $floatCurPrice ? $floatCurPrice+0.01 : $price;
         $price = $price < $minbid ? $minbid : $price;
-        return $price 
+        return $price; 
     }
 
 
@@ -61,17 +58,19 @@ class Ad extends CI_Model {
         $mark = 0;
         foreach($arrProWeight as $pro_id => $rate) {
             if ($mark === 1) {
-                $floatWeightSecondPrice = $arrProList[$pro_id]['second_price']; 
+                $floatSecondWeightPrice = $arrProList[$pro_id]['second_price']; 
                 break;
             }
             if ($intRand >= $intInterval
                 && $intRand <= $intInterval + $rate) {
                 $arrProInfo = $arrProList[$pro_id];
+                // 刚好落在最后一个，那么就没有下次循环了，那就按这个广告自己的二价来算， TODO
+                $floatSecondWeightPrice = $arrProList[$pro_id]['second_price']; 
                 $mark = 1;
             }
             $intInterval += $rate;
         }
-        return [$arrProInfo, $floatWeightSecondPrice];
+        return [$arrProInfo, $floatSecondWeightPrice];
     }
 
     /**
@@ -84,7 +83,9 @@ class Ad extends CI_Model {
         $arrWhere = array_keys($arrProList);
         $arrParams = [
             'select' => 'pro_id,exposure_num,click_num,cpm,spend,acp',
-            'where' => 'pro_id in(' . implode(',', $arrWhere) . ') and date=' . date("Ymd",strtotime("-1 day")),
+            //'where' => 'pro_id in(' . implode(',', $arrWhere) . ') and date=' . date("Ymd",strtotime("-1 day")),
+            // TODO 
+            'where' => 'pro_id in(' . implode(',', $arrWhere) . ') and date=20180627',
         ];
         $arrProData = $this->dbutil->getProData($arrParams);
         if (empty($arrProData)) {
@@ -129,8 +130,6 @@ class Ad extends CI_Model {
         return $arrProWeight;
     }
 
-
-
     /**
      * 昨日点击率* 100*权重+昨日ecpm*权重
      * @param int $intExposureNum 昨日曝光量
@@ -153,7 +152,7 @@ class Ad extends CI_Model {
     private function getTopPricePro($arrIndustry) {//{{{//
         /*
             一次性查询出指定industry_class，按second_price从大到小排序的前5个pro_id
-            select industry_class,substring_index(group_concat(concat_ws(';', pro_id,pro_url,pro_reg_stratge,pro_region,pro_phone_brond,pro_phone_grade,pro_phone_net,pro_sex,pro_interest_label,pro_date_cycle,pro_hour_cycle,pro_by_week,daily_budget,creative_des,creative_pic,app_name,creative_add_title,second_price) order by second_price desc separator '|'), '|', 5) from dsp_proinfo where industry_class in(4,5,6) group by industry_class;
+            select industry_class,substring_index(group_concat(concat_ws(';', pro_id,pro_url,pro_reg_stratge,pro_region,pro_phone_brond,pro_phone_grade,pro_phone_net,pro_sex,pro_interest_label,pro_date_cycle,pro_hour_cycle,pro_by_week,daily_budget,creative_des,creative_pic,creative_name,creative_add_title,second_price) order by second_price desc separator '|'), '|', 5) from dsp_proinfo where industry_class in(4,5,6) group by industry_class;
          */
         $arrProList = [];
         $this->load->library('DbUtil');
@@ -175,7 +174,7 @@ class Ad extends CI_Model {
             'daily_budget',
             'creative_des',
             'creative_pic',
-            'app_name',
+            'creative_name',
             'creative_add_title',
         ];
         $strSql = "select industry_class,substring_index(group_concat(concat_ws(';', ";
@@ -227,15 +226,25 @@ class Ad extends CI_Model {
      */
     private function getTopIndustry() {
         $arrResIndustryIds = [];
+
+        // 查询 有广告的 分类
+        $arrUsedIndustry = $this->getUsedIndustry();
+
         $this->load->config('industryclass');
         $arrIndustry = $this->config->item('industryclass');
         $arrRandIndustryList = [];
-        foreach ($arrIndustry as $val) {
+        foreach ($arrIndustry as $id => $val) {
+            if (!in_array($id, $arrUsedIndustry)) {
+                continue;
+            }
             for ($i=0;$i<$val['weight'];$i++) {
                 $arrRandIndustryList[] = $val['id'];
             }
         }
         for ($i=0;$i<$this->arrStratge['top_industry_limit'];$i++) {
+            if (empty($arrRandIndustryList)) {
+                break;
+            }
             shuffle($arrRandIndustryList);
             $intRandId = $arrRandIndustryList[0];
             $arrResIndustryIds[$intRandId] = $arrIndustry[$intRandId]['bottom_price'];
@@ -246,6 +255,23 @@ class Ad extends CI_Model {
             }
         }
         return $arrResIndustryIds;
+    }
+
+    private function getUsedIndustry() {
+        $arrData = [];
+        $this->load->library('DbUtil');
+        $sql = [
+            'select' => 'DISTINCT(industry_class)',
+            'where' => 'pro_status=2 AND running_status=2',
+        ];
+		$arrRes = $this->dbutil->getProInfo($sql);
+        foreach ($arrRes as $val) {
+            if (empty($val['industry_class'])) {
+                continue;
+            }
+            $arrData[] = $val['industry_class'];       
+        }
+        return $arrData;
     }
 
 }
