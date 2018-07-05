@@ -51,10 +51,10 @@ class ProInfo extends CI_Model {
 	/**
 	 * 获取pro信息
 	 */
-	public function getList($intAccountId) {
+    public function getList($arrParams) {
 		$where = array(
 			'select' => implode(',',self::RPO_ALL_INFO_KEY),
-			'where' => 'account_id = '. $intAccountId,
+			'where' => 'account_id = '. $arrParams['account_id'],
 		);
 		$arrInfo = $this->dbutil->getProInfo($where);
 		if(empty($arrInfo)){

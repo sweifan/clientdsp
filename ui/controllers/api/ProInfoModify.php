@@ -1,5 +1,5 @@
 <?php
-class ProInfoModify extends MY_Controller {
+class ProInfoModify extends Controller {
 
     const VALID_BASE_KEY = [
         'pro_by_week',
