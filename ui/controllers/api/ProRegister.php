@@ -71,13 +71,15 @@ class ProRegister extends Controller {
         $arrValidParams = [];
         if ($arrPostParams['pro_type'] == 2) {
             $arrValidParams = self::VALID_PRO_SITE_BASE_KEY;
-        } else if ($arrPostParams['pro_sys'] == 'IOS') {
+        } else if ($arrPostParams['pro_sys'] == 'iOS') {
             $arrValidParams = self::VALID_PRO_IOS_BASE_KEY;
         } else {
             $arrValidParams = self::VALID_PRO_ANDRION_BASE_KEY;
         }
         $arrValidParams = array_merge($arrValidParams, self::VALID_BASE_KEY);
         foreach ($arrPostParams as $key => &$val) {
+            // TODO 
+            break;
             if(!in_array($key, $arrValidParams)) {
 		        throw new Exception('params error', ErrCode::ERR_INVALID_PARAMS);	
             }

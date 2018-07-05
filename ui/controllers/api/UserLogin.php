@@ -45,13 +45,10 @@ class UserLogin extends Controller {
      * 检测登陆状态
      */
     public function checkStatus(){
-        if(empty($this->arrUser)){
-            return $this->outJson('', ErrCode::ERR_NOT_LOGIN);
-        }
+        $this->checkUserLogin();
         
         $data['email'] = $this->arrUser['email'];
         $data['username'] = $this->arrUser['username'];
-        $data['account_id'] = $this->arrUser['account_id'];
-            return $this->outJson($data,ErrCode::OK, '登录成功');
+        return $this->outJson($data,ErrCode::OK, '登录成功');
     }
 }

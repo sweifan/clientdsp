@@ -3,7 +3,6 @@
  * 推广相关 总类
  */
 
-
 class ProInfo extends CI_Model {
 
 	const RPO_ALL_INFO_KEY = [//{{{//
@@ -34,12 +33,12 @@ class ProInfo extends CI_Model {
 		"pro_style_name",
 		"creative_des",
 		"creative_pic",
-		"app_name",
+		"creative_name",
 		"creative_add_title",
 		"second_price",
 		"audit_status",
 		"pro_status",
-		"runing_status",
+		"running_status",
 		"create_time",
 		"update_time",
 	];//}}}//

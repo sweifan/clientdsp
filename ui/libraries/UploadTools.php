@@ -23,7 +23,7 @@ class UploadTools {
             throw new Exception('upload path not exists', ErrCode::ERR_SYSTEM);
         }
         $this->CI->load->library('upload', $arrUdpConf);
-        if (!$this->CI->upload->do_upload('userfile')) {
+        if (!$this->CI->upload->do_upload('file')) {
             throw new Exception($this->CI->upload->display_errors(), ErrCode::ERR_SYSTEM);
         }
         $arrRes = $this->CI->upload->data();

@@ -10,7 +10,7 @@
 * @author        Pierre-Jean Turpeau 
 * @link        http://www.codeigniter.com/wiki/CSVReader 
 */  
-class CSVReader {  
+class CsvTools {  
   
     var $fields;        /** columns names retrieved after parsing */  
     var $separator = ',';    /** separator used to explode each line */  
@@ -97,6 +97,16 @@ class CSVReader {
             $this->arrFile = ['upload_data' => $CI->upload->data()];
             return true;
         }
+    }
+
+    public function export($filename,$data) {
+        header("Content-type:text/csv");
+        header("Content-Disposition:attachment;filename=".$filename);
+        header('Cache-Control:must-revalidate,post-check=0,pre-check=0');
+        header('Expires:0');
+        header('Pragma:public');
+        echo $data;
+
     }
 
 }

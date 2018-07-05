@@ -36,13 +36,13 @@ class Tools extends Controller {
         //}
         // 用户白名单过滤
 
-        $arrTmp = explode('.', $_FILES['userfile']['name']);
+        $arrTmp = explode('.', $_FILES['file']['name']);
         $suffix = $arrTmp[count($arrTmp)-1];
         if (!in_array($suffix, array_keys(self::VALID_UPLOAD_SUFFIX))) {
-            throw new Exception('文件类型非法,请重新选择', ErrCode::ERR_UPLOAD);
+            throw new Exception($suffix . '文件类型非法,请重新选择', ErrCode::ERR_UPLOAD);
         }
         $arrUdpAppConf = $this->config->item(self::VALID_UPLOAD_SUFFIX[$suffix]);
-        $arrUdpAppConf['file_name'] = md5($_FILES['userfile']['name']);
+        $arrUdpAppConf['file_name'] = md5($_FILES['file']['name']);
         $strUrl = $this->uploadtools->upload($arrUdpAppConf);
         if (empty($strUrl)) {
             return $this->outJson('', ErrCode::ERR_UPLOAD, '上传文件失败，请重试');
