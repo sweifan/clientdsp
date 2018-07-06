@@ -55,7 +55,7 @@
  */
 	define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'development');
     define('WEBROOT', '/home/work/clientdsp/web');
-    if (ENVIRONMENT == 'development') {
+    if (ENVIRONMENT != 'development') {
         ini_set('session.cookie_domain', 'www.dsp.com');
     }
 

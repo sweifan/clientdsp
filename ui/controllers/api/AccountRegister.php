@@ -5,6 +5,7 @@
 class AccountRegister extends Controller {
 
 	const VALID_ACCOUNT_BASE_KEY = [
+        "confirm",
 		"passwd",
 		"email",
 		"company",
@@ -37,11 +38,18 @@ class AccountRegister extends Controller {
 		    throw new Exception('params error', ErrCode::ERR_INVALID_PARAMS);	
         }
 
+        if ($arrPostParams['confirm'] != $arrPostParams['passwd']) {
+		    throw new Exception('confirm password wrong', ErrCode::ERR_INVALID_PARAMS);	
+        }
+        unset($arrPostParams['confirm']);
+
         foreach ($arrPostParams as $key => &$val) {
             if(!in_array($key, self::VALID_ACCOUNT_BASE_KEY)) {
+		        throw new Exception('params error', ErrCode::ERR_INVALID_PARAMS);	
             }
             $val = $this->security->xss_clean($val);
         }
+
         $arrPostParams['passwd'] = md5($arrPostParams['passwd']);
         $this->load->model('Account');
         $arrRes = $this->Account->insertAccountInfo($arrPostParams);

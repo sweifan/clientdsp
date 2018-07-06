@@ -15,7 +15,7 @@ class UserLogin extends Controller {
     public function index() {
         $arrPostParams = json_decode(file_get_contents('php://input'), true);
         $strUserName = $arrPostParams['username'];
-        $strPasswd = $arrPostParams['passwd'];
+        $strPasswd = md5($arrPostParams['passwd']);
         
         if (empty($strUserName) || empty($strPasswd)) {
             return $this->outJson('', ErrCode::ERR_LOGIN_FAILED);
@@ -33,6 +33,7 @@ class UserLogin extends Controller {
      * 退出登陆
      */
     public function logout(){
+        $this->load->model('User');
         $res = $this->User->clearLoginInfo();
         if($res){
             return $this->outJson('',ErrCode::OK,'退出登录');
@@ -46,9 +47,8 @@ class UserLogin extends Controller {
      */
     public function checkStatus(){
         $this->checkUserLogin();
-        
         $data['email'] = $this->arrUser['email'];
         $data['username'] = $this->arrUser['username'];
-        return $this->outJson($data,ErrCode::OK, '登录成功');
+        return $this->outJson($data,ErrCode::OK, 'has login');
     }
 }
