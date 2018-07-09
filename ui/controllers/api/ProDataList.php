@@ -39,7 +39,8 @@ class ProDataList extends Controller {
         }
         $arrPostParams['account_id'] = $this->arrUser['account_id'];
         $this->load->model('ProData');
-        $arrData = $this->ProData->listProData($arrPostParams);
+        $arrData = $this->ProData->listProSumData($arrPostParams);
+        $arrData['list'] = $this->ProData->listProData($arrPostParams);
         $this->outJson($arrData, ErrCode::OK, '');
 
     }//}}}//
