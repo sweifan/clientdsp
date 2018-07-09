@@ -35,14 +35,16 @@ class ProData extends CI_Model {
         $sql .= ')taba INNER JOIN ';
         $sql .= '(SELECT pro_id,exposure_num,click_num,click_rate,cpm,spend,acp,`date` FROM dsp_prodata WHERE ';
         $sql .= '`date`>=' . $arrParams['startDate'] . ' AND `date`<=' . $arrParams['endDate'];
-        $sql .= ')tabb ON taba.pro_id=tabb.pro_id GROUP BY tabb.date';
+        $sql .= ')tabb ON taba.pro_id=tabb.pro_id GROUP BY tabb.date ORDER BY tabb.date ASC';
 
         $arrRes = $this->dbutil->query($sql);
         $arrData = [];
         foreach ($arrRes as $v) {
-            $v['click_rate'] = round($v['click_num']/$v['exposure_num'], 3);
-            $v['cpm'] = round($v['spend']/$v['exposure_num']*1000);
-            $arrData[$v['date']] = $v;
+            $arrData['curve']['curDate'][] = $v['date'];
+            $arrData['curve']['click_num'][] = $v['click_num'];
+            $arrData['curve']['exposure_num'][] = $v['exposure_num'];
+            $arrData['curve']['click_rate'][] = round($v['click_num']/$v['exposure_num'], 3);
+            $arrData['curve']['cpm'][] = round($v['spend']/$v['exposure_num']*1000);
         }
         return $arrData;
     }
