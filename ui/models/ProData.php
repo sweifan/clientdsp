@@ -41,6 +41,7 @@ class ProData extends CI_Model {
         $arrData = [];
         foreach ($arrRes as $v) {
             $arrData['curve']['curDate'][] = $v['date'];
+            $arrData['curve']['spend'][] = $v['spend'];
             $arrData['curve']['click_num'][] = $v['click_num'];
             $arrData['curve']['exposure_num'][] = $v['exposure_num'];
             $arrData['curve']['click_rate'][] = round($v['click_num']/$v['exposure_num'], 3);
