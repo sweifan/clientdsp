@@ -47,6 +47,8 @@ class DbUtil {
     const TAB_PRODATA               = 'dsp_prodata';
     const TAB_APK                   = 'dsp_apk';
     const TAB_PROSUMMERY            = 'dsp_prosummary';
+    const TAB_CONSUME               = 'dsp_consume';
+    const TAB_RECHARGE              = 'dsp_recharge';
 
     const TAB_MAP = [
         'account'   => self::TAB_ACCOUNT,
@@ -54,6 +56,8 @@ class DbUtil {
         'prodata'    => self::TAB_PRODATA,
         'apk' => self::TAB_APK,
         'prosummery' => self::TAB_PROSUMMERY,
+        'consume' => self::TAB_CONSUME,
+        'recharge' => self::TAB_RECHARGE,
 	];
 
     public static $instance;
