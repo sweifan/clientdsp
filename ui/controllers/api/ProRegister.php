@@ -86,7 +86,7 @@ class ProRegister extends Controller {
             $val = $this->security->xss_clean($val);
         }
     
-        $arrPostParams['industry_class'] = implode(',', $arrPostParams['industry_class']);
+        !empty($arrPostParams['industry_class']) && $arrPostParams['industry_class'] = implode(',', $arrPostParams['industry_class']);
         $arrPostParams['pro_by_week'] = implode(',', $arrPostParams['pro_by_week']);
         $arrPostParams['pro_date_cycle'] = str_replace('-', '', implode(',', $arrPostParams['pro_date_cycle']));
         $arrPostParams['pro_hour_cycle'] = implode(',', $arrPostParams['pro_hour_cycle']);

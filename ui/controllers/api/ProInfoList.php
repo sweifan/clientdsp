@@ -30,7 +30,7 @@ class ProInfoList extends Controller {
         }
         $arrPostParams['account_id'] = $this->arrUser['account_id'];
         $this->load->model('ProInfo');
-        $arrData = $this->ProInfo->getList($arrPostParams);
+        $arrData['list'] = $this->ProInfo->getList($arrPostParams);
         $this->outJson($arrData, ErrCode::OK, '');
 
     }//}}}//
