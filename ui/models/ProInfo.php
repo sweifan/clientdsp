@@ -52,15 +52,42 @@ class ProInfo extends CI_Model {
 	 * 获取pro信息
 	 */
     public function getList($arrParams) {
+        $arrSelect = [
+            'select' => 'count(*) as total',
+			'where' => 'account_id = '. $arrParams['account_id'],
+        ];
+		$arrRes = $this->dbutil->getProInfo($arrSelect);
+        if (empty($arrRes)) {
+            $intCount = 0;
+            $arrRes = [];
+            return [
+                'list' => $arrRes,
+                'pagination' => [
+                    'total' => $intCount,
+                    'pageSize' => $arrParams['rn'],
+                    'current' => $arrParams['pn'],
+                ],
+            ];
+        }
+        $intCount = $arrRes[0]['total'];
 		$where = array(
 			'select' => implode(',',self::RPO_ALL_INFO_KEY),
 			'where' => 'account_id = '. $arrParams['account_id'],
+            'order_by' => 'create_time DESC',
+            'limit' => $arrParams['rn']*($arrParams['pn']-1) . ',' . $arrParams['rn'],
 		);
 		$arrInfo = $this->dbutil->getProInfo($where);
 		if(empty($arrInfo)){
 			return [];
 		}
-		return $arrInfo;
+        return [
+            'list' => $arrInfo,
+            'pagination' => [
+                'total' => intval($intCount),
+                'pageSize' => $arrParams['rn'],
+                'current' => $arrParams['pn'],
+            ],
+        ];
 	} 
 
 	/**
