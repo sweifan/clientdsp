@@ -84,7 +84,6 @@ class ProInfo extends CI_Model {
 		if ($arrRes['code'] === 1062) {
 			throw new Exception('duplicate user info:' . $arrRes['message'], ErrCode::ERR_SYSTEM);
 		} else if ($arrRes['code'] !== 0){
-            var_dump($arrRes);exit;
 			throw new Exception('system error', ErrCode::ERR_SYSTEM);	
 		} else {
 			return $arrRes;

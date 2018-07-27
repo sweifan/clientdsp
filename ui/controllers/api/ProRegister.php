@@ -85,6 +85,15 @@ class ProRegister extends Controller {
             }
             $val = $this->security->xss_clean($val);
         }
+    
+        $arrPostParams['industry_class'] = implode(',', $arrPostParams['industry_class']);
+        $arrPostParams['pro_by_week'] = implode(',', $arrPostParams['pro_by_week']);
+        $arrPostParams['pro_date_cycle'] = str_replace('-', '', implode(',', $arrPostParams['pro_date_cycle']));
+        $arrPostParams['pro_hour_cycle'] = implode(',', $arrPostParams['pro_hour_cycle']);
+        $arrPostParams['pro_interest_label'] = implode(',', $arrPostParams['pro_interest_label']);
+        $arrPostParams['pro_region'] = implode(',', $arrPostParams['pro_region']);
+        $arrPostParams['pro_phone_grade'] = implode(',', $arrPostParams['pro_phone_grade']);
+
         $arrPostParams['account_id'] = $this->arrUser['account_id'];
         $this->load->model('ProInfo');
         $arrRes = $this->ProInfo->insertProInfo($arrPostParams);
